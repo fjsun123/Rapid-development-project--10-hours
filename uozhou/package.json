@@ -1,0 +1,35 @@
+{
+  "name": "restaurant-operations",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "dev:dashboard": "pnpm --filter @restaurant/dashboard dev",
+    "dev:backend": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurant NODE_ENV=development pnpm --filter restaurant-backend dev",
+    "dev": "concurrently -n backend,dashboard -c green,cyan \"pnpm dev:backend\" \"pnpm dev:dashboard\"",
+    "gen:contract": "pnpm --filter restaurant-backend gen:contract && pnpm --filter @restaurant/api-client gen",
+    "db:push": "pnpm --filter restaurant-backend db:push",
+    "db:seed": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurant pnpm --filter restaurant-backend db:seed",
+    "db:studio": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurant pnpm --filter restaurant-backend db:studio",
+    "lint": "turbo run typecheck",
+    "typecheck": "turbo run typecheck",
+    "test": "pnpm test:e2e",
+    "test:backend": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurant pnpm --filter restaurant-backend test",
+    "test:e2e": "playwright test --workers=1",
+    "test:coverage": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/restaurant pnpm --filter restaurant-backend test:coverage"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "concurrently": "^9.2.1",
+    "playwright": "^1.60.0",
+    "turbo": "^2.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  }
+}

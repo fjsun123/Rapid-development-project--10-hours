@@ -1,0 +1,21 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
+    },
+    "gen:contract": {
+      "outputs": ["openapi.json", "packages/api-client/openapi.json"]
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

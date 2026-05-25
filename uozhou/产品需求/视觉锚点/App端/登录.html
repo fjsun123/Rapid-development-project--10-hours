@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>登录 - 美食点餐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background-color: #F9FAFB;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 375px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 40px 24px;
+            min-height: calc(100vh - 40px);
+        }
+
+        /* Logo Section */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+        }
+
+        .logo svg {
+            width: 48px;
+            height: 48px;
+            fill: white;
+        }
+
+        .welcome-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 4px;
+        }
+
+        .welcome-subtitle {
+            font-size: 14px;
+            color: #9CA3AF;
+        }
+
+        /* Form Section */
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .phone-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .country-code {
+            width: 80px;
+            height: 48px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .country-code:hover {
+            border-color: #F59E0B;
+        }
+
+        .country-code:focus-within {
+            border-color: #F59E0B;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .country-code select {
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: #374151;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+        }
+
+        .input-field {
+            flex: 1;
+            height: 48px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            padding: 0 16px;
+            font-size: 16px;
+            color: #1F2937;
+            transition: all 0.2s ease;
+            outline: none;
+            background: white;
+        }
+
+        .input-field::placeholder {
+            color: #9CA3AF;
+        }
+
+        .input-field:hover {
+            border-color: #D1D5DB;
+        }
+
+        .input-field:focus {
+            border-color: #F59E0B;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+
+        .input-field.error {
+            border-color: #EF4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .input-field:disabled {
+            background: #F3F4F6;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+        .code-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .code-input {
+            flex: 1;
+            letter-spacing: 8px;
+            text-align: center;
+        }
+
+        .get-code-btn {
+            width: 110px;
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            background: #F59E0B;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .get-code-btn:hover {
+            background: #D97706;
+        }
+
+        .get-code-btn:active {
+            transform: scale(0.98);
+        }
+
+        .get-code-btn:disabled {
+            background: #E5E7EB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+        }
+
+        .get-code-btn.counting {
+            background: #F3F4F6;
+            color: #9CA3AF;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #EF4444;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* Agreement Section */
+        .agreement-section {
+            margin-bottom: 24px;
+        }
+
+        .agreement-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .checkbox-wrapper input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #D1D5DB;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .checkbox-wrapper input:checked + .checkbox-custom {
+            background: #F59E0B;
+            border-color: #F59E0B;
+        }
+
+        .checkbox-custom svg {
+            width: 12px;
+            height: 12px;
+            fill: white;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .checkbox-wrapper input:checked + .checkbox-custom svg {
+            opacity: 1;
+        }
+
+        .agreement-text {
+            font-size: 12px;
+            color: #6B7280;
+            line-height: 1.5;
+        }
+
+        .agreement-text a {
+            color: #F59E0B;
+            text-decoration: none;
+        }
+
+        .agreement-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Login Button */
+        .login-btn {
+            width: 100%;
+            height: 48px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            background: #E5E7EB;
+            color: #9CA3AF;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 32px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: #E5E7EB;
+        }
+
+        .divider-text {
+            padding: 0 16px;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+
+        /* Third-party Login */
+        .third-party-section {
+            text-align: center;
+        }
+
+        .third-party-title {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 20px;
+        }
+
+        .third-party-icons {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .third-party-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1px solid #E5E7EB;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .third-party-btn:hover {
+            border-color: #07C160;
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.2);
+        }
+
+        .third-party-btn svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        /* WeChat Icon */
+        .wechat-icon {
+            fill: #07C160;
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        .login-btn.loading .btn-text {
+            display: none;
+        }
+
+        .login-btn.loading .loading-spinner {
+            display: block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .container {
+                padding: 24px 20px;
+            }
+
+            .logo-section {
+                margin-bottom: 24px;
+            }
+
+            .logo {
+                width: 64px;
+                height: 64px;
+            }
+
+            .logo svg {
+                width: 36px;
+                height: 36px;
+            }
+
+            .welcome-text {
+                font-size: 20px;
+            }
+
+            .divider {
+                margin: 24px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/>
+                </svg>
+            </div>
+            <h1 class="welcome-text">欢迎回来</h1>
+            <p class="welcome-subtitle">登录您的账号继续点餐</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <!-- Phone Input -->
+            <div class="input-group">
+                <label class="input-label">手机号码</label>
+                <div class="phone-input-wrapper">
+                    <div class="country-code">
+                        <select id="countryCode">
+                            <option value="+86">+86</option>
+                            <option value="+852">+852</option>
+                            <option value="+853">+853</option>
+                            <option value="+886">+886</option>
+                        </select>
+                    </div>
+                    <input type="tel" class="input-field" id="phoneInput" placeholder="请输入手机号码" maxlength="11">
+                </div>
+                <p class="error-message" id="phoneError">请输入正确的手机号码</p>
+            </div>
+
+            <!-- Verification Code Input -->
+            <div class="input-group">
+                <label class="input-label">验证码</label>
+                <div class="code-input-wrapper">
+                    <input type="text" class="input-field code-input" id="codeInput" placeholder="000000" maxlength="6">
+                    <button class="get-code-btn" id="getCodeBtn">获取验证码</button>
+                </div>
+                <p class="error-message" id="codeError">验证码错误，请重新输入</p>
+            </div>
+        </div>
+
+        <!-- Agreement Section -->
+        <div class="agreement-section">
+            <label class="agreement-checkbox">
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="agreementCheckbox">
+                    <div class="checkbox-custom">
+                        <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.28 2.28L4 8.56 1.72 6.28A.75.75 0 10.66 7.34l2.5 2.5a.75.75 0 001.06 0l7-7a.75.75 0 00-1.06-1.06z"/>
+                        </svg>
+                    </div>
+                </div>
+                <span class="agreement-text">我已阅读并同意<a href="#">《用户协议》</a>和<a href="#">《隐私政策》</a></span>
+            </label>
+        </div>
+
+        <!-- Login Button -->
+        <button class="login-btn" id="loginBtn">
+            <span class="btn-text">登 录</span>
+            <div class="loading-spinner"></div>
+        </button>
+
+        <!-- Divider -->
+        <div class="divider">
+            <div class="divider-line"></div>
+            <span class="divider-text">其他登录方式</span>
+            <div class="divider-line"></div>
+        </div>
+
+        <!-- Third-party Login -->
+        <div class="third-party-section">
+            <div class="third-party-icons">
+                <button class="third-party-btn" id="wechatLoginBtn" title="微信登录">
+                    <svg class="wechat-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.045c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 01-.023-.156.49.49 0 01.201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-7.062-6.122zm-2.036 2.87c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 01-.969.983.976.976 0 01-.969-.983c0-.542.434-.982.97-.982z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const phoneInput = document.getElementById('phoneInput');
+        const codeInput = document.getElementById('codeInput');
+        const getCodeBtn = document.getElementById('getCodeBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const agreementCheckbox = document.getElementById('agreementCheckbox');
+        const phoneError = document.getElementById('phoneError');
+        const codeError = document.getElementById('codeError');
+
+        // State
+        let countdown = 0;
+        let countdownTimer = null;
+
+        // Phone number validation
+        function validatePhone(phone) {
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            return phoneRegex.test(phone);
+        }
+
+        // Show error
+        function showError(input, errorElement) {
+            input.classList.add('error');
+            errorElement.classList.add('show');
+        }
+
+        // Hide error
+        function hideError(input, errorElement) {
+            input.classList.remove('error');
+            errorElement.classList.remove('show');
+        }
+
+        // Phone input events
+        phoneInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            hideError(phoneInput, phoneError);
+        });
+
+        phoneInput.addEventListener('blur', function() {
+            if (this.value && !validatePhone(this.value)) {
+                showError(phoneInput, phoneError);
+            }
+        });
+
+        // Code input events
+        codeInput.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            hideError(codeInput, codeError);
+        });
+
+        // Get verification code
+        getCodeBtn.addEventListener('click', function() {
+            const phone = phoneInput.value;
+
+            if (!validatePhone(phone)) {
+                showError(phoneInput, phoneError);
+                phoneInput.focus();
+                return;
+            }
+
+            // Start countdown
+            countdown = 60;
+            getCodeBtn.disabled = true;
+            getCodeBtn.classList.add('counting');
+
+            function updateCountdown() {
+                getCodeBtn.textContent = `${countdown}s`;
+                countdown--;
+
+                if (countdown < 0) {
+                    clearInterval(countdownTimer);
+                    getCodeBtn.disabled = false;
+                    getCodeBtn.classList.remove('counting');
+                    getCodeBtn.textContent = '获取验证码';
+                }
+            }
+
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
+
+            // Simulate sending code
+            console.log('Verification code sent to:', phone);
+        });
+
+        // Login button
+        loginBtn.addEventListener('click', async function() {
+            const phone = phoneInput.value;
+            const code = codeInput.value;
+
+            // Validation
+            if (!validatePhone(phone)) {
+                showError(phoneInput, phoneError);
+                phoneInput.focus();
+                return;
+            }
+
+            if (code.length !== 6) {
+                showError(codeInput, codeError);
+                codeInput.focus();
+                return;
+            }
+
+            if (!agreementCheckbox.checked) {
+                alert('请先阅读并同意用户协议和隐私政策');
+                return;
+            }
+
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone, code })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '登录失败');
+                }
+
+                const data = await response.json();
+
+                // Save token to localStorage
+                if (data.accessToken) {
+                    localStorage.setItem('token', data.accessToken);
+                }
+
+                // Save user info if available
+                if (data.user) {
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                }
+
+                console.log('Login successful:', data);
+                alert('登录成功！');
+
+                // Redirect based on user role
+                if (data.user && data.user.role === 'merchant') {
+                    window.location.href = '商家端/商家工作台.html';
+                } else {
+                    window.location.href = '客户端/客户端点餐首页.html';
+                }
+            } catch (e) {
+                console.error('Login failed:', e);
+                alert(e.message || '登录失败，请重试');
+            } finally {
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
+        });
+
+        // WeChat login
+        document.getElementById('wechatLoginBtn').addEventListener('click', function() {
+            if (!agreementCheckbox.checked) {
+                alert('请先阅读并同意用户协议和隐私政策');
+                return;
+            }
+            console.log('WeChat login clicked');
+            alert('正在跳转微信授权...');
+        });
+    </script>
+</body>
+</html>

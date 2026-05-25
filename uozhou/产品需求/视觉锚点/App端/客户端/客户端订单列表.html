@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的订单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #F59E0B;
+            --primary-light: #FEF3C7;
+            --primary-dark: #D97706;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --bg-color: #F5F5F5;
+            --card-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --danger-color: #EF4444;
+            --info-color: #3B82F6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            max-width: 375px;
+            margin: 0 auto;
+            padding-bottom: 70px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-bg);
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Tab Filter */
+        .tab-filter {
+            background: var(--card-bg);
+            padding: 12px 0;
+            position: sticky;
+            top: 52px;
+            z-index: 99;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-scroll {
+            display: flex;
+            overflow-x: auto;
+            padding: 0 12px;
+            gap: 8px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-item {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: var(--bg-color);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .tab-item.active {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .tab-item:active {
+            transform: scale(0.95);
+        }
+
+        /* Pull to Refresh */
+        .pull-indicator {
+            text-align: center;
+            padding: 12px;
+            color: var(--text-muted);
+            font-size: 13px;
+            display: none;
+        }
+
+        .pull-indicator.show {
+            display: block;
+        }
+
+        .pull-indicator .icon {
+            display: inline-block;
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Order List */
+        .order-list {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Order Card */
+        .order-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .order-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .order-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .order-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .status-accepted {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-making {
+            background: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-ready {
+            background: #D1FAE5;
+            color: #059669;
+        }
+
+        .status-completed {
+            background: #E5E7EB;
+            color: #6B7280;
+        }
+
+        .status-cancelled {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        /* Order Items */
+        .order-items {
+            margin-bottom: 12px;
+        }
+
+        .items-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .item-tag {
+            display: inline-block;
+            background: var(--bg-color);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+
+        /* Order Footer */
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-amount {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .order-amount .currency {
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .empty-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .btn-order {
+            padding: 12px 32px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-order:active {
+            transform: scale(0.95);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            background: var(--card-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 16px;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            display: none;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: rotate 0.8s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>我的订单</h1>
+    </div>
+
+    <!-- Tab Filter -->
+    <div class="tab-filter">
+        <div class="tab-scroll">
+            <button class="tab-item active" data-status="all">全部</button>
+            <button class="tab-item" data-status="pending">待接单</button>
+            <button class="tab-item" data-status="accepted">制作中</button>
+            <button class="tab-item" data-status="ready">待出餐</button>
+            <button class="tab-item" data-status="completed">已完成</button>
+            <button class="tab-item" data-status="cancelled">已取消</button>
+        </div>
+    </div>
+
+    <!-- Pull to Refresh Indicator -->
+    <div class="pull-indicator" id="pullIndicator">
+        <span class="icon">↻</span> 刷新中...
+    </div>
+
+    <!-- Order List -->
+    <div class="order-list" id="orderList">
+        <!-- Orders will be rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="12" width="48" height="44" rx="4" stroke="#D1D5DB" stroke-width="2"/>
+                <path d="M8 20h48" stroke="#D1D5DB" stroke-width="2"/>
+                <circle cx="16" cy="16" r="2" fill="#D1D5DB"/>
+                <circle cx="24" cy="16" r="2" fill="#D1D5DB"/>
+                <circle cx="32" cy="16" r="2" fill="#D1D5DB"/>
+                <path d="M20 32h24M20 40h16" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <p class="empty-text">暂无订单，去点餐吧</p>
+        <button class="btn-order" onclick="goToMenu()">去点餐</button>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-item" onclick="switchTab('menu')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/>
+                </svg>
+            </div>
+            <span class="nav-label">点餐</span>
+        </a>
+        <a href="#" class="nav-item active" onclick="switchTab('orders')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    <path d="M9 12h6M9 16h6"/>
+                </svg>
+            </div>
+            <span class="nav-label">订单</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchTab('profile')">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <span class="nav-label">我的</span>
+        </a>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+        // Mock order data
+        const orders = [
+            {
+                id: 'DD202405220001',
+                time: '2024-05-22 12:30',
+                status: 'pending',
+                statusText: '待接单',
+                items: [
+                    { name: '招牌牛肉面', qty: 1 },
+                    { name: '卤蛋', qty: 2 },
+                    { name: '酸梅汤', qty: 1 }
+                ],
+                amount: 38.00
+            },
+            {
+                id: 'DD202405220002',
+                time: '2024-05-22 11:45',
+                status: 'accepted',
+                statusText: '制作中',
+                items: [
+                    { name: '红烧排骨面', qty: 1 },
+                    { name: '凉拌黄瓜', qty: 1 }
+                ],
+                amount: 32.00
+            },
+            {
+                id: 'DD202405220003',
+                time: '2024-05-22 10:20',
+                status: 'ready',
+                statusText: '待出餐',
+                items: [
+                    { name: '酸菜鱼面', qty: 2 },
+                    { name: '米饭', qty: 2 },
+                    { name: '可乐', qty: 2 }
+                ],
+                amount: 68.00
+            },
+            {
+                id: 'DD202405210001',
+                time: '2024-05-21 19:30',
+                status: 'completed',
+                statusText: '已完成',
+                items: [
+                    { name: '番茄鸡蛋面', qty: 1 },
+                    { name: '炸鸡排', qty: 1 }
+                ],
+                amount: 28.00
+            },
+            {
+                id: 'DD202405210002',
+                time: '2024-05-21 12:15',
+                status: 'cancelled',
+                statusText: '已取消',
+                items: [
+                    { name: '麻辣牛肉面', qty: 1 }
+                ],
+                amount: 26.00
+            },
+            {
+                id: 'DD202405200001',
+                time: '2024-05-20 18:45',
+                status: 'completed',
+                statusText: '已完成',
+                items: [
+                    { name: '担担面', qty: 2 },
+                    { name: '红油抄手', qty: 1 },
+                    { name: '冰粉', qty: 2 }
+                ],
+                amount: 52.00
+            }
+        ];
+
+        let currentStatus = 'all';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderOrders();
+            setupTabFilter();
+            setupPullToRefresh();
+        });
+
+        // Setup tab filter
+        function setupTabFilter() {
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentStatus = tab.dataset.status;
+                    renderOrders();
+                });
+            });
+        }
+
+        // Setup pull to refresh
+        function setupPullToRefresh() {
+            let startY = 0;
+            let isPulling = false;
+            const indicator = document.getElementById('pullIndicator');
+
+            document.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) {
+                    startY = e.touches[0].pageY;
+                    isPulling = true;
+                }
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isPulling) return;
+                const currentY = e.touches[0].pageY;
+                const diff = currentY - startY;
+
+                if (diff > 60 && window.scrollY === 0) {
+                    indicator.classList.add('show');
+                    indicator.innerHTML = '<span class="icon">↻</span> 释放刷新';
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                if (indicator.classList.contains('show')) {
+                    indicator.innerHTML = '<span class="icon">↻</span> 刷新中...';
+                    setTimeout(() => {
+                        renderOrders();
+                        indicator.classList.remove('show');
+                        showToast('刷新成功');
+                    }, 1000);
+                }
+                isPulling = false;
+            });
+        }
+
+        // Render orders
+        function renderOrders() {
+            const orderList = document.getElementById('orderList');
+            const emptyState = document.getElementById('emptyState');
+
+            let filteredOrders = orders;
+            if (currentStatus !== 'all') {
+                filteredOrders = orders.filter(order => order.status === currentStatus);
+            }
+
+            if (filteredOrders.length === 0) {
+                orderList.style.display = 'none';
+                emptyState.style.display = 'flex';
+                return;
+            }
+
+            orderList.style.display = 'flex';
+            emptyState.style.display = 'none';
+
+            orderList.innerHTML = filteredOrders.map(order => `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <span class="order-number">订单号：${order.id}</span>
+                            <span class="order-time">${order.time}</span>
+                        </div>
+                        <span class="status-badge status-${order.status}">${order.statusText}</span>
+                    </div>
+                    <div class="order-items">
+                        <div class="items-preview">
+                            ${order.items.map(item => `<span class="item-tag">${item.name} x${item.qty}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="order-footer">
+                        <div class="order-amount">
+                            <span class="currency">¥</span>${order.amount.toFixed(2)}
+                        </div>
+                        <div class="order-actions">
+                            ${renderActions(order)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render action buttons based on status
+        function renderActions(order) {
+            switch (order.status) {
+                case 'pending':
+                    return `
+                        <button class="btn btn-outline" onclick="remindOrder('${order.id}')">催单</button>
+                        <button class="btn btn-danger" onclick="cancelOrder('${order.id}')">取消订单</button>
+                    `;
+                case 'accepted':
+                case 'ready':
+                    return `
+                        <button class="btn btn-outline" onclick="remindOrder('${order.id}')">催单</button>
+                    `;
+                case 'completed':
+                    return `
+                        <button class="btn btn-outline" onclick="reorder('${order.id}')">再来一单</button>
+                        <button class="btn btn-primary" onclick="reviewOrder('${order.id}')">评价</button>
+                    `;
+                case 'cancelled':
+                    return `
+                        <button class="btn btn-outline" onclick="reorder('${order.id}')">再来一单</button>
+                    `;
+                default:
+                    return '';
+            }
+        }
+
+        // Action handlers
+        function remindOrder(orderId) {
+            showToast('已催单，请耐心等待');
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm('确定要取消订单吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3001/api/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '取消失败');
+                }
+
+                const data = await response.json();
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = 'cancelled';
+                    order.statusText = '已取消';
+                    renderOrders();
+                    showToast('订单已取消');
+                }
+            } catch (e) {
+                console.error('取消订单失败:', e);
+                showToast(e.message || '取消失败，请重试');
+            }
+        }
+
+        function reorder(orderId) {
+            showToast('已加入购物车');
+        }
+
+        function reviewOrder(orderId) {
+            showToast('跳转评价页面');
+        }
+
+        function goToMenu() {
+            showToast('跳转点餐页面');
+        }
+
+        function switchTab(tab) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            if (tab !== 'orders') {
+                showToast(`跳转${tab === 'menu' ? '点餐' : '我的'}页面`);
+            }
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+    </script>
+</body>
+</html>

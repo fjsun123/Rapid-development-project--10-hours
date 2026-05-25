@@ -1,0 +1,11 @@
+name = "restaurant-backend"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/restaurant"
+
+# 本地开发配置
+[[local_dev]]
+port = 3001
