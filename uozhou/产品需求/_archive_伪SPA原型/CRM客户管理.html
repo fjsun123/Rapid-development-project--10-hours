@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM客户管理 - 餐厅管理仪表板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        body { background: #F9FAFB; color: #111827; }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar { width: 256px; background: #111827; padding: 24px; }
+        .sidebar-logo { font-size: 20px; font-weight: 600; color: #F59E0B; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
+        .sidebar-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #9CA3AF; text-decoration: none; border-radius: 8px; margin-bottom: 4px; transition: all 0.2s; }
+        .sidebar-nav-item:hover, .sidebar-nav-item.active { background: #374151; color: #F59E0B; }
+        .main-content { flex: 1; padding: 32px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-title { font-size: 28px; font-weight: 600; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #F59E0B; color: white; }
+        .btn-primary:hover { background: #D97706; }
+        .btn-secondary { background: white; border: 1px solid #E5E7EB; color: #374151; }
+        .btn-secondary:hover { background: #F9FAFB; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .search-bar { background: white; padding: 16px 24px; border-radius: 12px; margin-bottom: 24px; display: flex; gap: 16px; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .input { padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 14px; flex: 1; max-width: 400px; }
+        .input:focus { outline: none; border-color: #F59E0B; }
+        .input::placeholder { color: #9CA3AF; }
+        .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; font-size: 12px; font-weight: 600; color: #6B7280; padding: 16px 24px; background: #F9FAFB; border-bottom: 1px solid #E5E7EB; }
+        .table td { padding: 16px 24px; border-bottom: 1px solid #F3F4F6; font-size: 14px; }
+        .table tr:hover { background: #F9FAFB; cursor: pointer; }
+        .customer-name { color: #F59E0B; font-weight: 500; }
+        .customer-name:hover { text-decoration: underline; }
+        .money { color: #10B981; font-weight: 600; }
+        .action-btn { padding: 4px 12px; border-radius: 6px; border: 1px solid #E5E7EB; background: white; cursor: pointer; font-size: 12px; color: #374151; transition: all 0.2s; margin-right: 8px; }
+        .action-btn:hover { border-color: #F59E0B; color: #F59E0B; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: white; border-top: 1px solid #E5E7EB; }
+        .pagination-info { font-size: 14px; color: #6B7280; }
+        .pagination-buttons { display: flex; gap: 8px; }
+        .page-btn { width: 36px; height: 36px; border-radius: 8px; border: 1px solid #E5E7EB; background: white; cursor: pointer; font-size: 14px; color: #374151; transition: all 0.2s; }
+        .page-btn:hover { border-color: #F59E0B; color: #F59E0B; }
+        .page-btn.active { background: #F59E0B; border-color: #F59E0B; color: white; }
+        .stat-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #FEF3C7; color: #D97706; border-radius: 6px; font-size: 12px; font-weight: 500; }
+        .empty-state { text-align: center; padding: 80px 24px; }
+        .empty-icon { width: 120px; height: 120px; margin-bottom: 24px; opacity: 0.5; }
+        .empty-title { font-size: 18px; font-weight: 600; color: #6B7280; margin-bottom: 8px; }
+        .empty-desc { font-size: 14px; color: #9CA3AF; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                餐堂管理
+            </div>
+            <nav>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    首页
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    订单
+                </a>
+                <a href="#" class="sidebar-nav-item active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    CRM
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    菜单
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    设置
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="page-title">客户管理</div>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    新增客户
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" class="input" placeholder="搜索客户姓名或手机号">
+            </div>
+
+            <!-- Customers Table -->
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>手机号</th>
+                            <th>订单总数</th>
+                            <th>累计消费</th>
+                            <th>最后下单时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="customer-name">张三</span></td>
+                            <td>138****0000</td>
+                            <td><span class="stat-badge">12 单</span></td>
+                            <td class="money">¥1,258.00</td>
+                            <td>2026-05-22 18:32</td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看订单</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="customer-name">李四</span></td>
+                            <td>139****1234</td>
+                            <td><span class="stat-badge">8 单</span></td>
+                            <td class="money">¥680.00</td>
+                            <td>2026-05-21 12:15</td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看订单</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="customer-name">王五</span></td>
+                            <td>137****5678</td>
+                            <td><span class="stat-badge">25 单</span></td>
+                            <td class="money">¥3,450.00</td>
+                            <td>2026-05-22 09:58</td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看订单</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="customer-name">赵六</span></td>
+                            <td>136****9012</td>
+                            <td><span class="stat-badge">5 单</span></td>
+                            <td class="money">¥420.00</td>
+                            <td>2026-05-20 15:40</td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看订单</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><span class="customer-name">孙七</span></td>
+                            <td>135****3456</td>
+                            <td><span class="stat-badge">18 单</span></td>
+                            <td class="money">¥2,180.00</td>
+                            <td>2026-05-22 11:25</td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看订单</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-15 条，共 89 位客户</div>
+                    <div class="pagination-buttons">
+                        <button class="page-btn">«</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">...</button>
+                        <button class="page-btn">6</button>
+                        <button class="page-btn">»</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

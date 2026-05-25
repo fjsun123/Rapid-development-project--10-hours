@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>商家订单管理</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary-color: #F59E0B;
+            --primary-dark: #D97706;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --warning-dark: #D97706;
+            --info: #3B82F6;
+            --info-dark: #2563EB;
+            --gray: #9CA3AF;
+            --gray-dark: #6B7280;
+            --gray-light: #F3F4F6;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+            --danger-dark: #DC2626;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F5F5F5;
+            color: #1F2937;
+            max-width: 375px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        /* Top Tab Filter */
+        .tab-filter {
+            position: sticky;
+            top: 0;
+            background-color: #FFFFFF;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-scroll {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding: 12px 16px;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-item {
+            flex: 0 0 auto;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-dark);
+            background-color: var(--gray-light);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-item.active {
+            color: white;
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Pull to Refresh Indicator */
+        .pull-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%);
+            z-index: 101;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .pull-indicator.active {
+            opacity: 1;
+            height: 60px;
+        }
+
+        .pull-icon {
+            font-size: 20px;
+            color: var(--primary-color);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .pull-text {
+            color: var(--gray-dark);
+            font-size: 13px;
+            margin-left: 8px;
+        }
+
+        /* Order Cards List */
+        .order-list {
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .order-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+
+        .order-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .order-card.swipe-left {
+            transform: translateX(-50%);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .order-number {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--gray-dark);
+        }
+
+        .order-time {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .order-type {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background-color: var(--gray-light);
+            color: var(--gray-dark);
+        }
+
+        .order-table {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--gray-dark);
+        }
+
+        .order-time-info {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .order-total {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .total-label {
+            font-size: 13px;
+            color: var(--gray);
+            margin-right: 4px;
+        }
+
+        .total-amount {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--danger-dark);
+        }
+
+        .food-items {
+            background-color: var(--gray-light);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+
+        .food-items-title {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 6px;
+        }
+
+        .food-items-text {
+            font-size: 13px;
+            color: var(--gray-dark);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .order-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--primary-color);
+        }
+
+        .status-confirmed {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+        }
+
+        .status-ready {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+
+        .status-completed {
+            background-color: rgba(156, 163, 175, 0.15);
+            color: var(--gray);
+        }
+
+        .status-cancelled {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn.accept {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn.accept:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .action-btn.confirm {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .action-btn.finish {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .action-btn.cancel {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Cancel Buttons */
+        .cancel-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cancel-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            background-color: white;
+            border: 1.5px solid var(--danger);
+            color: var(--danger);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .cancel-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* FAB - Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 90;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+        }
+
+        .fab:active {
+            transform: scale(0.95) rotate(90deg);
+        }
+
+        .fab i {
+            font-size: 24px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            background-color: white;
+            border-top: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 100;
+            padding-bottom: max(8px, env(safe-area-inset-bottom));
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            color: var(--gray);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            color: var(--gray);
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: white;
+        }
+
+        .nav-item.active i {
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active span {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            color: var(--gray-light);
+            margin-bottom: 16px;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-dark);
+            margin-bottom: 8px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        /* Swipe Actions */
+        .swipe-actions {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            display: flex;
+            gap: 8px;
+            padding: 16px 0 16px 12px;
+            overflow: hidden;
+        }
+
+        .swipe-btn {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 60px;
+            justify-content: center;
+        }
+
+        .swipe-btn.accept {
+            background-color: var(--primary-color);
+        }
+
+        .swipe-btn.cancel {
+            background-color: var(--danger);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--gray-light);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        @media (max-width: 400px) {
+            .tab-item {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pull to Refresh Indicator -->
+    <div class="pull-indicator" id="pullIndicator">
+        <i class="fas fa-sync-alt pull-icon" id="pullIcon"></i>
+        <span class="pull-text" id="pullText">下拉刷新</span>
+    </div>
+
+    <!-- Top Tab Filter -->
+    <div class="tab-filter">
+        <div class="tab-scroll" id="tabScroll">
+            <div class="tab-item active" data-tab="all">全部</div>
+            <div class="tab-item" data-tab="pending">待接单</div>
+            <div class="tab-item" data-tab="making">制作中</div>
+            <div class="tab-item" data-tab="ready">待出餐</div>
+            <div class="tab-item" data-tab="completed">已完成</div>
+            <div class="tab-item" data-tab="cancelled">已取消</div>
+        </div>
+    </div>
+
+    <!-- Order List -->
+    <div class="order-list" id="orderList">
+        <!-- Orders will be rendered here -->
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-icon">
+            <i class="fas fa-clipboard-list"></i>
+        </div>
+        <div class="empty-title">暂无订单</div>
+        <div class="empty-desc">当前分类下没有订单</div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading" id="loadingState" style="display: none;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">加载中...</div>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab" id="fab">
+        <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <a href="商家工作台.html" class="nav-item">
+            <i class="fas fa-briefcase"></i>
+            <span>工作台</span>
+        </a>
+        <a href="商家订单管理.html" class="nav-item active">
+            <i class="fas fa-receipt"></i>
+            <span>订单</span>
+        </a>
+        <a href="商家我的.html" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>我的</span>
+        </a>
+    </div>
+
+    <script>
+        // 从后端API获取订单数据
+        let orders = [];
+        let loadedFromAPI = false;
+
+        async function fetchOrders() {
+            const token = localStorage.getItem('token');
+            try {
+                const response = await fetch('http://localhost:3001/api/orders', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    // API返回 {data: [], total: int} 结构
+                    orders = result.data || result;
+                    loadedFromAPI = true;
+                    renderOrders();
+                }
+            } catch (error) {
+                console.error('获取订单失败:', error);
+                // 降级使用模拟数据
+                orders = getMockOrders();
+            }
+        }
+
+        function getMockOrders() {
+            return [
+                {
+                    id: '001',
+                    number: '2025001',
+                    time: '12:30',
+                    type: '堂食',
+                    table: '2号桌',
+                    customer: '张先生',
+                    total: 68,
+                    status: 'pending',
+                    items: '红烧肉套餐x1、回锅肉x1、清炒时蔬x2、米饭x4',
+                    orderTime: '12:15',
+                    readyTime: '12:45'
+                },
+                {
+                    id: '002',
+                    number: '2025002',
+                    time: '12:25',
+                    type: '外卖',
+                    customer: '李女士',
+                    total: 89,
+                    status: 'confirmed',
+                    items: '麻辣香锅x1、酸辣粉x2、啤酒x1',
+                    orderTime: '12:20',
+                    readyTime: '12:50'
+                },
+                {
+                    id: '003',
+                    number: '2025003',
+                    time: '12:20',
+                    type: '堂食',
+                    table: '5号桌',
+                    customer: '王小姐',
+                    total: 45,
+                    status: 'ready',
+                    items: '宫保鸡丁x1、地三鲜x1、米饭x2',
+                    orderTime: '12:15',
+                    readyTime: '12:40'
+                },
+                {
+                    id: '004',
+                    number: '2025004',
+                    time: '12:10',
+                    type: '外卖',
+                    customer: '赵先生',
+                    total: 128,
+                    status: 'confirmed',
+                    items: '鱼香肉丝x2、麻婆豆腐x2、番茄蛋汤x1',
+                    orderTime: '12:05',
+                    readyTime: '12:35'
+                },
+                {
+                    id: '005',
+                    number: '2025005',
+                    time: '12:05',
+                    type: '堂食',
+                    table: '8号桌',
+                    customer: '刘先生',
+                    total: 92,
+                    status: 'completed',
+                    items: '水煮鱼x1、毛血旺x1、蛋炒饭x1',
+                    orderTime: '12:00',
+                    readyTime: '12:45'
+                },
+                {
+                    id: '006',
+                    number: '2025006',
+                    time: '11:55',
+                    type: '外卖',
+                    customer: '陈女士',
+                    total: 56,
+                    status: 'cancelled',
+                    items: '螺狮粉x1、花生米x1',
+                    orderTime: '11:50',
+                    readyTime: '-'
+                }
+            ];
+        }
+
+        // Status mapping from backend to frontend
+        function mapStatus(status) {
+            const maps = {
+                'pending': '待接单',
+                'confirmed': '制作中',
+                'ready': '待出餐',
+                'completed': '已完成',
+                'cancelled': '已取消'
+            };
+            return maps[status] || '待接单';
+        }
+
+        // Current selected tab
+        let currentTab = 'all';
+
+        // DOM elements
+        const orderList = document.getElementById('orderList');
+        const emptyState = document.getElementById('emptyState');
+        const loadingState = document.getElementById('loadingState');
+        const tabScroll = document.getElementById('tabScroll');
+        const tabs = document.querySelectorAll('.tab-item');
+        const fab = document.getElementById('fab');
+        const tabItems = document.querySelectorAll('.tab-item');
+
+        // Status config
+        const statusConfig = {
+            pending: { label: '待接单', class: 'status-pending' },
+            confirmed: { label: '制作中', class: 'status-confirmed' },
+            ready: { label: '待出餐', class: 'status-ready' },
+            completed: { label: '已完成', class: 'status-completed' },
+            cancelled: { label: '已取消', class: 'status-cancelled' }
+        };
+
+        // Action buttons config
+        const actionButtons = {
+            pending: '<button class="action-btn accept" onclick="acceptOrder(this)">接单</button>',
+            confirmed: '<button class="action-btn confirm" onclick="confirmOrder(this)">开始制作</button>',
+            ready: '<button class="action-btn finish" onclick="readyOrder(this)">出餐</button>',
+            completed: '<button class="action-btn cancel" onclick="cancelOrder(this)">完成</button>',
+            cancelled: `
+                <div class="cancel-actions">
+                    <button class="cancel-btn" onclick="cancelOrder(this)">编辑</button>
+                    <button class="cancel-btn" onclick="cancelOrder(this)">删除</button>
+                </div>
+            `
+        };
+
+        // Render order card
+        function renderOrderCard(order) {
+            const status = statusConfig[order.status] || statusConfig['pending'];
+            const actions = actionButtons[order.status];
+
+            // Extract time from createdAt
+            const orderTime = order.createdAt ? new Date(order.createdAt).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+            return `
+                <div class="order-card" data-id="${order.id}" data-status="${order.status}" oncontextmenu="return false;">
+                    <div class="swipe-actions">
+                        ${order.status === 'pending' ? '<button class="swipe-btn accept" onclick="acceptOrder(this)">接单</button>' : ''}
+                        ${(order.status === 'confirmed' || order.status === 'ready') ? '<button class="swipe-btn cancel" onclick="cancelOrder(this)">取消</button>' : ''}
+                    </div>
+                    <div class="order-header">
+                        <div class="order-header">
+                            <span class="order-number">${order.orderNo || '未知'}</span>
+                            <span class="order-time">${orderTime}</span>
+                            <span class="order-type">堂食</span>
+                        </div>
+                    </div>
+                    <div class="order-info">
+                        <div class="order-table">
+                            <i class="fas fa-user small-icon"></i>
+                            ${order.customerName || '未知客户'}
+                        </div>
+                        <div class="order-time-info">
+                            <i class="fas fa-clock"></i>
+                            下单时间：${orderTime}
+                        </div>
+                    </div>
+                    <div class="order-total">
+                        <span class="total-label">合计</span>
+                        <span class="total-amount">¥${order.total ? order.total / 100 : 0}</span>
+                    </div>
+                    <div class="food-items">
+                        <div class="food-items-title">备注</div>
+                        <div class="food-items-text">${order.notes || '无'}</div>
+                    </div>
+                    <div class="order-footer">
+                        <span class="status-badge ${status.class}">${status.label}</span>
+                        ${actions}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render orders
+        function renderOrders(filterTab = 'all') {
+            const filteredOrders = filterTab === 'all'
+                ? orders
+                : orders.filter(order => order.status === filterTab);
+
+            if (filteredOrders.length === 0) {
+                orderList.innerHTML = '';
+                emptyState.style.display = 'flex';
+            } else {
+                orderList.innerHTML = filteredOrders.map(renderOrderCard).join('');
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+
+                // Scroll to active tab
+                const tabLeft = tab.getBoundingClientRect().left - tabScroll.getBoundingClientRect().left + tabScroll.scrollLeft;
+                tabScroll.scrollTo({ left: tabLeft - 16, behavior: 'smooth' });
+
+                renderOrders(currentTab);
+            });
+        });
+
+        // Swipe to handle
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let currentOrderCard = null;
+
+        orderList.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            currentOrderCard = e.target.closest('.order-card');
+        });
+
+        orderList.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (!currentOrderCard) return;
+
+            const diff = touchStartX - touchEndX;
+            const screenWidth = window.innerWidth;
+
+            if (diff > 80 && touchStartX < screenWidth / 2) {
+                // Swipe left to show action buttons
+                currentOrderCard.classList.add('swipe-left');
+            } else if (diff < -80 && touchStartX > screenWidth / 2) {
+                // Swipe right to close
+                currentOrderCard.classList.remove('swipe-left');
+            }
+        }
+
+        // Cancel after swipe timeout
+        orderList.addEventListener('touchend', (e) => {
+            setTimeout(() => {
+                orderList.querySelectorAll('.order-card').forEach(card => {
+                    card.classList.remove('swipe-left');
+                });
+            }, 300);
+        });
+
+        // Touch to cancel swipe (click on body)
+        document.body.addEventListener('click', (e) => {
+            if (!e.target.closest('.order-card')) {
+                orderList.querySelectorAll('.order-card').forEach(card => {
+                    card.classList.remove('swipe-left');
+                });
+            }
+        });
+
+        // Pull to refresh
+        const pullIndicator = document.getElementById('pullIndicator');
+        const pullIcon = document.getElementById('pullIcon');
+        const pullText = document.getElementById('pullText');
+        let startY = 0;
+        let isPulling = false;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.order-card')) return;
+            startY = e.touches[0].pageY;
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.order-card')) return;
+
+            const currentY = e.touches[0].pageY;
+            const diff = currentY - startY;
+
+            if (diff > 50 && diff < 120) {
+                isPulling = true;
+                pullIndicator.classList.add('active');
+                if (diff < 80) {
+                    pullIcon.className = 'fas fa-sync-alt pull-icon';
+                    pullText.textContent = '下拉刷新';
+                } else {
+                    pullIcon.className = 'fas fa-sync-alt pull-icon';
+                    pullText.textContent = '释放刷新';
+                }
+            } else if (diff >= 120) {
+                isPulling = true;
+                pullIndicator.classList.add('active');
+                pullIcon.className = 'fas fa-check pull-icon';
+                pullText.textContent = '刷新完成';
+            } else {
+                pullIndicator.classList.remove('active');
+                isPulling = false;
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isPulling && pullIndicator.classList.contains('active')) {
+                const diff = document.documentElement.scrollTop;
+                if (diff === 0) {
+                    pullText.textContent = '刷新中...';
+                    setTimeout(() => {
+                        pullIndicator.classList.remove('active');
+                        pullText.textContent = '下拉刷新';
+                        renderOrders(currentTab); // Simulate refresh
+                    }, 1500);
+                }
+            }
+            isPulling = false;
+        });
+
+        // FAB click
+        fab.addEventListener('click', () => {
+            const newOrder = {
+                id: String(orders.length + 1).padStart(3, '0'),
+                number: `202500${orders.length + 1}`,
+                time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+                type: '堂食',
+                table: '-',
+                customer: '新顾客',
+                total: 0,
+                status: 'pending',
+                items: '',
+                orderTime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+                readyTime: '-'
+            };
+            orders.unshift(newOrder);
+            renderOrders(currentTab);
+        });
+
+        // Action functions - 连接后端API
+        async function acceptOrder(btn) {
+            const card = btn.closest('.order-card');
+            const orderId = card.dataset.id;
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch(`http://localhost:3001/api/orders/${orderId}/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const orderIndex = orders.findIndex(o => o.id == orderId);
+                    if (orderIndex >= 0) {
+                        orders[orderIndex] = { ...orders[orderIndex], ...data };
+                        renderOrders(currentTab);
+                    }
+                }
+            } catch (e) {
+                console.error('接单失败:', e);
+            }
+        }
+
+        async function confirmOrder(btn) {
+            const card = btn.closest('.order-card');
+            const orderId = card.dataset.id;
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch(`http://localhost:3001/api/orders/${orderId}/ready`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const orderIndex = orders.findIndex(o => o.id == orderId);
+                    if (orderIndex >= 0) {
+                        orders[orderIndex] = { ...orders[orderIndex], ...data };
+                        renderOrders(currentTab);
+                    }
+                }
+            } catch (e) {
+                console.error('出餐失败:', e);
+            }
+        }
+
+        async function readyOrder(btn) {
+            const card = btn.closest('.order-card');
+            const orderId = card.dataset.id;
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch(`http://localhost:3001/api/orders/${orderId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const orderIndex = orders.findIndex(o => o.id == orderId);
+                    if (orderIndex >= 0) {
+                        orders[orderIndex] = { ...orders[orderIndex], ...data };
+                        renderOrders(currentTab);
+                    }
+                }
+            } catch (e) {
+                console.error('完成失败:', e);
+            }
+        }
+
+        async function cancelOrder(btn) {
+            const card = btn.closest('.order-card');
+            const orderId = card.dataset.id;
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch(`http://localhost:3001/api/orders/${orderId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const orderIndex = orders.findIndex(o => o.id == orderId);
+                    if (orderIndex >= 0) {
+                        orders[orderIndex] = { ...orders[orderIndex], ...data };
+                        renderOrders(currentTab);
+                    }
+                }
+            } catch (e) {
+                console.error('取消失败:', e);
+            }
+        }
+
+        // Auto scroll to active tab on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const activeTab = document.querySelector('.tab-item.active');
+            if (activeTab) {
+                const tabLeft = activeTab.getBoundingClientRect().left - tabScroll.getBoundingClientRect().left + tabScroll.scrollLeft;
+                tabScroll.scrollTo({ left: tabLeft - 16, behavior: 'smooth' });
+            }
+            // 从API获取订单数据
+            fetchOrders();
+        });
+
+        // Prevent context menu on long press
+        orderList.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

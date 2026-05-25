@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台首页 - 餐厅管理仪表板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        body { background: #F9FAFB; color: #111827; }
+        .container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 256px;
+            background: #111827;
+            padding: 24px;
+            fixed left
+        }
+        .sidebar-logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #F59E0B;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #9CA3AF;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .sidebar-nav-item:hover, .sidebar-nav-item.active {
+            background: #374151;
+            color: #F59E0B;
+        }
+        .main-content { flex: 1; padding: 32px; max-width: 1920px; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .page-title { font-size: 28px; font-weight: 600; color: #111827; }
+        .header-right { display: flex; gap: 16px; align-items: center; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: #F59E0B; color: white; }
+        .btn-primary:hover { background: #D97706; }
+        .btn-secondary { background: white; border: 1px solid #E5E7EB; color: #374151; }
+        .btn-secondary:hover { background: #F9FAFB; border-color: #D1D5DB; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px; }
+        .card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .kpi-card { padding: 24px; }
+        .kpi-title { font-size: 14px; color: #6B7280; font-weight: 500; margin-bottom: 8px; }
+        .kpi-value { font-size: 32px; font-weight: 600; color: #111827; margin-bottom: 8px; }
+        .kpi-sub { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .kpi-sub.green { color: #10B981; }
+        .kpi-sub.green::before { content: '↑'; font-size: 12px; }
+        .kpi-sub.red { color: #EF4444; }
+        .kpi-sub.red::before { content: '↓'; font-size: 12px; }
+        .chart-section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .section-title { font-size: 20px; font-weight: 600; }
+        .chart-container { height: 300px; display: flex; align-items: flex-end; justify-content: space-around; padding-top: 24px; border-bottom: 1px solid #E5E7EB; }
+        .chart-bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 60px; }
+        .chart-bar { width: 40px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); border-radius: 6px 6px 0 0; transition: height 0.3s; }
+        .chart-bar:hover { opacity: 0.9; }
+        .chart-label { font-size: 12px; color: #6B7280; }
+        .table-section { background: white; border-radius: 12px; padding: 24px; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th { text-align: left; font-size: 12px; font-weight: 600; color: #6B7280; padding: 12px 16px; border-bottom: 2px solid #E5E7EB; }
+        .table td { padding: 16px; border-bottom: 1px solid #F3F4F6; font-size: 14px; }
+        .table tr:hover { background: #F9FAFB; }
+        .status-badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #FEF3C7; color: #D97706; }
+        .status-confirmed { background: #DBEAFE; color: #2563EB; }
+        .status-ready { background: #D1FAE5; color: #059669; }
+        .status-completed { background: #9CA3AF; color: #6B7280; }
+        .status-cancelled { background: #FEE2E2; color: #DC2626; }
+        .trend-chart { height: 300px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 24px; border-left: 1px solid #E5E7EB; border-bottom: 1px solid #E5E7EB; position: relative; }
+        .trend-line { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: dash 2s ease-out forwards; }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
+        .trend-dot { transition: all 0.2s; cursor: pointer; }
+        .trend-dot:hover { r: 8; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #F3F4F6; border-top-color: #F59E0B; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" style="{ position: fixed; height: 100vh; }">
+            <div class="sidebar-logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                餐堂管理
+            </div>
+            <nav>
+                <a href="#" class="sidebar-nav-item active">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    首页
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 11l3 3L22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    订单
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    CRM
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    菜单
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    设置
+                </a>
+                <a href="#" class="sidebar-nav-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    UI组件库
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="page-title">后台首页</div>
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="this.innerHTML='<div style=\'width:40px;height:40px;\'></div>'">刷新</button>
+                    <div class="avatar">唐</div>
+                </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="card kpi-card">
+                    <div class="kpi-title">今日订单数</div>
+                    <div class="kpi-value">156</div>
+                    <div class="kpi-sub green">较昨日增长 12%</div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-title">今日收入</div>
+                    <div class="kpi-value">¥12,580</div>
+                    <div class="kpi-sub green">较昨日增长 8.5%</div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-title">待处理订单</div>
+                    <div class="kpi-value">23</div>
+                    <div class="kpi-sub red">待接单: 8 | 制作中: 10 | 待出餐: 5</div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-title">热门商品</div>
+                    <div class="kpi-value">宫保鸡丁</div>
+                    <div class="kpi-sub">今日售出 32 份</div>
+                </div>
+            </div>
+
+            <!-- Trend Chart -->
+            <div class="chart-section">
+                <div class="section-header">
+                    <div class="section-title">近7天订单趋势</div>
+                </div>
+                <div class="trend-chart">
+                    <svg width="100%" height="300" viewBox="0 0 900 300">
+                        <!-- Grid lines -->
+                        <line x1="60" y1="30" x2="880" y2="30" stroke="#F3F4F6" stroke-width="1"/>
+                        <line x1="60" y1="90" x2="880" y2="90" stroke="#F3F4F6" stroke-width="1"/>
+                        <line x1="60" y1="150" x2="880" y2="150" stroke="#F3F4F6" stroke-width="1"/>
+                        <line x1="60" y1="210" x2="880" y2="210" stroke="#F3F4F6" stroke-width="1"/>
+                        <line x1="60" y1="270" x2="880" y2="270" stroke="#F3F4F6" stroke-width="1"/>
+                        <!-- Area fill -->
+                        <path d="M60 270 L60 180 L180 210 L300 120 L420 150 L540 90 L660 120 L780 60 L880 90 L880 270 Z" fill="url(#gradient)" opacity="0.3"/>
+                        <!-- Line -->
+                        <path d="M60 180 L180 210 L300 120 L420 150 L540 90 L660 120 L780 60 L880 90" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="trend-line"/>
+                        <!-- Dots -->
+                        <circle cx="60" cy="180" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="180" cy="210" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="300" cy="120" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="420" cy="150" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="540" cy="90" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="660" cy="120" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="780" cy="60" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <circle cx="880" cy="90" r="5" fill="#F59E0B" class="trend-dot"/>
+                        <!-- Labels -->
+                        <text x="60" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周一</text>
+                        <text x="180" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周二</text>
+                        <text x="300" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周三</text>
+                        <text x="420" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周四</text>
+                        <text x="540" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周五</text>
+                        <text x="660" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周六</text>
+                        <text x="780" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周日</text>
+                        <text x="880" y="300" text-anchor="middle" fill="#9CA3AF" font-size="12">周一</text>
+                        <!-- Tooltip -->
+                        <g transform="translate(730, 30)">
+                            <rect x="0" y="0" width="100" height="50" rx="8" fill="#111827" opacity="0.95"/>
+                            <text x="50" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="500">今日订单</text>
+                            <text x="50" y="38" text-anchor="middle" fill="#F59E0B" font-size="14" font-weight="600">156 单</text>
+                        </g>
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:0.5"/>
+                                <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Recent Orders -->
+            <div class="table-section">
+                <div class="section-header">
+                    <div class="section-title">最近订单</div>
+                    <a href="#" class="btn btn-secondary">查看全部</a>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>订单号</th>
+                            <th>客户</th>
+                            <th>总金额</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ORD-2026001</td>
+                            <td>张三</td>
+                            <td>¥58.00</td>
+                            <td><span class="status-badge status-confirmed">制作中</span></td>
+                            <td>2026-05-22 18:32</td>
+                        </tr>
+                        <tr>
+                            <td>ORD-2026002</td>
+                            <td>李四</td>
+                            <td>¥45.00</td>
+                            <td><span class="status-badge status-pending">待接单</span></td>
+                            <td>2026-05-22 18:15</td>
+                        </tr>
+                        <tr>
+                            <td>ORD-2026003</td>
+                            <td>王五</td>
+                            <td>¥68.00</td>
+                            <td><span class="status-badge status-ready">待出餐</span></td>
+                            <td>2026-05-22 17:58</td>
+                        </tr>
+                        <tr>
+                            <td>ORD-2026004</td>
+                            <td>赵六</td>
+                            <td>¥52.00</td>
+                            <td><span class="status-badge status-completed">已完成</span></td>
+                            <td>2026-05-22 17:40</td>
+                        </tr>
+                        <tr>
+                            <td>ORD-2026005</td>
+                            <td>孙七</td>
+                            <td>¥78.00</td>
+                            <td><span class="status-badge status-ready">待出餐</span></td>
+                            <td>2026-05-22 17:25</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

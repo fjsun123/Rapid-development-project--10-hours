@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>商家工作台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #F59E0B;
+            --primary-light: #FEF3C7;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --warning: #F97316;
+            --warning-light: #FFEDD5;
+            --error: #EF4444;
+            --error-light: #FEE2E2;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --text-light: #9CA3AF;
+            --bg-gray: #F3F4F6;
+            --border-color: #E5E7EB;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-primary);
+            max-width: 375px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding-bottom: 70px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .store-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .store-selector .arrow {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .role-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .role-badge.chef {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .role-badge.manager {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .notification-icon {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .notification-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-secondary);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            background: var(--error);
+            border-radius: 50%;
+            border: 2px solid var(--white);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 16px;
+        }
+
+        /* KPI Cards */
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .kpi-card.full-width {
+            grid-column: span 2;
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .kpi-value.primary {
+            color: var(--primary);
+        }
+
+        .kpi-value.success {
+            color: var(--success);
+        }
+
+        .kpi-value.warning {
+            color: var(--warning);
+        }
+
+        .kpi-value.error {
+            color: var(--error);
+        }
+
+        /* Pending Orders */
+        .pending-orders {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pending-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .pending-item .count {
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .pending-item.waiting {
+            background: var(--error-light);
+            color: var(--error);
+        }
+
+        .pending-item.preparing {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .pending-item.ready {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        /* Kitchen Todo Section */
+        .kitchen-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title .count {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-gray);
+            border-radius: 8px;
+        }
+
+        .todo-info {
+            flex: 1;
+        }
+
+        .todo-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .todo-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .todo-meta .order-no {
+            color: var(--primary);
+        }
+
+        .todo-time {
+            font-size: 12px;
+            color: var(--error);
+            margin-right: 12px;
+        }
+
+        .btn-complete {
+            background: var(--success);
+            color: var(--white);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-complete:hover {
+            background: #059669;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .action-btn {
+            background: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn .icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--white);
+        }
+
+        .action-btn .icon.primary {
+            background: var(--primary);
+        }
+
+        .action-btn .icon.success {
+            background: var(--success);
+        }
+
+        .action-btn .text {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Recent Orders */
+        .recent-orders {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .order-item:hover {
+            background: #E5E7EB;
+        }
+
+        .order-no {
+            width: 60px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-items-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .order-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .order-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .order-status.waiting {
+            background: var(--error-light);
+            color: var(--error);
+        }
+
+        .order-status.preparing {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .order-status.ready {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .order-status.completed {
+            background: var(--bg-gray);
+            color: var(--text-secondary);
+        }
+
+        /* Low Stock Warning */
+        .warning-banner {
+            background: var(--warning-light);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .warning-banner .icon {
+            width: 36px;
+            height: 36px;
+            background: var(--warning);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .warning-banner .icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--white);
+        }
+
+        .warning-content {
+            flex: 1;
+        }
+
+        .warning-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--warning);
+            margin-bottom: 2px;
+        }
+
+        .warning-text {
+            font-size: 12px;
+            color: #92400E;
+        }
+
+        .warning-action {
+            font-size: 12px;
+            color: var(--warning);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Bottom Tab Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 375px;
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 8px 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-item .label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Role Switcher (for demo) */
+        .role-switcher {
+            position: fixed;
+            top: 60px;
+            right: 16px;
+            background: var(--white);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 200;
+            display: none;
+        }
+
+        .role-switcher.show {
+            display: block;
+        }
+
+        .role-switcher-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            padding: 0 8px;
+        }
+
+        .role-option {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .role-option:hover {
+            background: var(--bg-gray);
+        }
+
+        .role-option.active {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Hidden sections based on role */
+        .waiter-only, .manager-only, .chef-only {
+            display: none;
+        }
+
+        body.role-waiter .waiter-only,
+        body.role-manager .manager-only,
+        body.role-chef .chef-only {
+            display: block;
+        }
+
+        body.role-waiter .chef-only,
+        body.role-manager .chef-only,
+        body.role-chef .waiter-only,
+        body.role-chef .manager-only {
+            display: none;
+        }
+
+        body.role-waiter .kpi-section,
+        body.role-manager .kpi-section {
+            display: grid;
+        }
+
+        body.role-chef .kpi-section {
+            display: none;
+        }
+    </style>
+</head>
+<body class="role-waiter">
+    <!-- Header -->
+    <header class="header">
+        <div class="store-selector" onclick="toggleRoleSwitcher()">
+            <span>川味小馆</span>
+            <span class="arrow">&#9660;</span>
+        </div>
+        <div class="header-right">
+            <span class="role-badge" id="roleBadge">服务员</span>
+            <div class="notification-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="notification-dot"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Role Switcher (for demo) -->
+    <div class="role-switcher" id="roleSwitcher">
+        <div class="role-switcher-title">切换角色</div>
+        <button class="role-option active" data-role="waiter">服务员</button>
+        <button class="role-option" data-role="chef">后厨</button>
+        <button class="role-option" data-role="manager">店长</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- KPI Cards (Waiter/Manager) -->
+        <section class="kpi-section waiter-only manager-only">
+            <div class="kpi-card">
+                <div class="kpi-label">今日订单</div>
+                <div class="kpi-value primary">128</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">今日营收</div>
+                <div class="kpi-value success">¥8,640</div>
+            </div>
+            <div class="kpi-card full-width">
+                <div class="kpi-label">待处理订单</div>
+                <div class="pending-orders">
+                    <div class="pending-item waiting">
+                        <span class="count">3</span>
+                        <span>待接单</span>
+                    </div>
+                    <div class="pending-item preparing">
+                        <span class="count">5</span>
+                        <span>制作中</span>
+                    </div>
+                    <div class="pending-item ready">
+                        <span class="count">2</span>
+                        <span>待出餐</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kitchen Todo List (Chef) -->
+        <section class="kitchen-section chef-only">
+            <div class="section-title">
+                <span>待制作清单</span>
+                <span class="count">8 项</span>
+            </div>
+            <div class="todo-list">
+                <div class="todo-item">
+                    <div class="todo-info">
+                        <div class="todo-name">红烧肉 x2</div>
+                        <div class="todo-meta">订单 <span class="order-no">#1024</span> · 桌号 A3</div>
+                    </div>
+                    <span class="todo-time">5分钟</span>
+                    <button class="btn-complete">完成</button>
+                </div>
+                <div class="todo-item">
+                    <div class="todo-info">
+                        <div class="todo-name">宫保鸡丁 x1</div>
+                        <div class="todo-meta">订单 <span class="order-no">#1025</span> · 桌号 B1</div>
+                    </div>
+                    <span class="todo-time">3分钟</span>
+                    <button class="btn-complete">完成</button>
+                </div>
+                <div class="todo-item">
+                    <div class="todo-info">
+                        <div class="todo-name">麻婆豆腐 x1 + 米饭 x2</div>
+                        <div class="todo-meta">订单 <span class="order-no">#1026</span> · 桌号 C2</div>
+                    </div>
+                    <span class="todo-time">8分钟</span>
+                    <button class="btn-complete">完成</button>
+                </div>
+                <div class="todo-item">
+                    <div class="todo-info">
+                        <div class="todo-name">水煮鱼 x1</div>
+                        <div class="todo-meta">订单 <span class="order-no">#1027</span> · 外卖</div>
+                    </div>
+                    <span class="todo-time">12分钟</span>
+                    <button class="btn-complete">完成</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <button class="action-btn">
+                <div class="icon primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="text">创建订单</span>
+            </button>
+            <button class="action-btn">
+                <div class="icon success">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                </div>
+                <span class="text">扫码点餐</span>
+            </button>
+        </section>
+
+        <!-- Low Stock Warning -->
+        <div class="warning-banner">
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <div class="warning-content">
+                <div class="warning-title">库存预警</div>
+                <div class="warning-text">青椒、土豆库存不足，请及时补货</div>
+            </div>
+            <span class="warning-action">查看 &gt;</span>
+        </div>
+
+        <!-- Recent Orders -->
+        <section class="recent-orders">
+            <div class="section-title">
+                <span>最近订单</span>
+                <a href="商家订单管理.html" class="count" style="text-decoration:none;color:inherit;">查看全部 &gt;</a>
+            </div>
+            <div class="order-list">
+                <div class="order-item">
+                    <div class="order-no">#1028</div>
+                    <div class="order-info">
+                        <div class="order-items-text">鱼香肉丝 x1、米饭 x2</div>
+                        <div class="order-time">2分钟前 · 桌号 A5</div>
+                    </div>
+                    <span class="order-status waiting">待接单</span>
+                </div>
+                <div class="order-item">
+                    <div class="order-no">#1027</div>
+                    <div class="order-info">
+                        <div class="order-items-text">水煮鱼 x1</div>
+                        <div class="order-time">5分钟前 · 外卖</div>
+                    </div>
+                    <span class="order-status preparing">制作中</span>
+                </div>
+                <div class="order-item">
+                    <div class="order-no">#1026</div>
+                    <div class="order-info">
+                        <div class="order-items-text">麻婆豆腐 x1、米饭 x2</div>
+                        <div class="order-time">8分钟前 · 桌号 C2</div>
+                    </div>
+                    <span class="order-status preparing">制作中</span>
+                </div>
+                <div class="order-item">
+                    <div class="order-no">#1025</div>
+                    <div class="order-info">
+                        <div class="order-items-text">宫保鸡丁 x1</div>
+                        <div class="order-time">12分钟前 · 桌号 B1</div>
+                    </div>
+                    <span class="order-status ready">待出餐</span>
+                </div>
+                <div class="order-item">
+                    <div class="order-no">#1024</div>
+                    <div class="order-info">
+                        <div class="order-items-text">红烧肉 x2、青菜 x1</div>
+                        <div class="order-time">15分钟前 · 桌号 A3</div>
+                    </div>
+                    <span class="order-status completed">已完成</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="商家工作台.html" class="nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span class="label">工作台</span>
+        </a>
+        <a href="商家订单管理.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span class="label">订单</span>
+        </a>
+        <a href="商家我的.html" class="nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span class="label">我的</span>
+        </a>
+    </nav>
+
+    <script>
+        // Role switcher functionality
+        let roleSwitcherOpen = false;
+
+        function toggleRoleSwitcher() {
+            roleSwitcherOpen = !roleSwitcherOpen;
+            document.getElementById('roleSwitcher').classList.toggle('show', roleSwitcherOpen);
+        }
+
+        // Close role switcher when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.store-selector') && !e.target.closest('.role-switcher')) {
+                roleSwitcherOpen = false;
+                document.getElementById('roleSwitcher').classList.remove('show');
+            }
+        });
+
+        // Role switching
+        const roleOptions = document.querySelectorAll('.role-option');
+        const roleBadge = document.getElementById('roleBadge');
+        const body = document.body;
+
+        const roleConfig = {
+            waiter: { label: '服务员', class: '' },
+            chef: { label: '后厨', class: 'chef' },
+            manager: { label: '店长', class: 'manager' }
+        };
+
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const role = this.dataset.role;
+                const config = roleConfig[role];
+
+                // Update body class
+                body.className = `role-${role}`;
+
+                // Update role badge
+                roleBadge.textContent = config.label;
+                roleBadge.className = 'role-badge' + (config.class ? ` ${config.class}` : '');
+
+                // Update active state
+                roleOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+
+                // Close switcher
+                roleSwitcherOpen = false;
+                document.getElementById('roleSwitcher').classList.remove('show');
+            });
+        });
+
+        // Complete button functionality
+        document.querySelectorAll('.btn-complete').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const item = this.closest('.todo-item');
+                item.style.opacity = '0.5';
+                this.textContent = '已完成';
+                this.disabled = true;
+                this.style.background = '#9CA3AF';
+
+                // Update count
+                const countEl = document.querySelector('.kitchen-section .count');
+                if (countEl) {
+                    const currentCount = parseInt(countEl.textContent);
+                    countEl.textContent = `${currentCount - 1} 项`;
+                }
+            });
+        });
+
+        // Order item click
+        document.querySelectorAll('.order-item').forEach(item => {
+            item.addEventListener('click', function() {
+                alert('跳转到订单详情页');
+            });
+        });
+
+        // Quick action buttons
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.querySelector('.text').textContent;
+                alert(`功能: ${text}`);
+            });
+        });
+
+        // Warning action
+        document.querySelector('.warning-action').addEventListener('click', function() {
+            alert('跳转到库存管理页面');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI组件库 - 餐厅管理仪表板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        body { background: #F9FAFB; color: #111827; }
+
+        /* Layout */
+        .page-container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+        .page-header { margin-bottom: 48px; text-align: center; }
+        .page-title { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .page-desc { color: #6B7280; font-size: 16px; }
+
+        /* Sections */
+        .section { background: white; border-radius: 16px; padding: 32px; margin-bottom: 32px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .section-title { font-size: 24px; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #F59E0B; color: #111827; }
+        .section-subtitle { font-size: 18px; font-weight: 600; margin: 32px 0 16px; color: #374151; }
+
+        /* Color Tokens */
+        .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+        .color-card { border-radius: 12px; overflow: hidden; border: 1px solid #E5E7EB; }
+        .color-swatch { height: 100px; }
+        .color-info { padding: 12px; background: white; }
+        .color-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .color-hex { font-family: monospace; font-size: 12px; color: #6B7280; }
+
+        /* Typography */
+        .typography-item { padding: 24px; border-bottom: 1px solid #F3F4F6; display: flex; justify-content: space-between; align-items: center; }
+        .typography-item:last-child { border-bottom: none; }
+        .typography-spec { font-family: monospace; font-size: 12px; color: #6B7280; background: #F3F4F6; padding: 4px 8px; border-radius: 4px; }
+
+        /* Spacing */
+        .spacing-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+        .spacing-item { text-align: center; }
+        .spacing-bar { height: 40px; background: #F59E0B; margin-bottom: 8px; border-radius: 4px; }
+        .spacing-label { font-size: 12px; color: #6B7280; }
+
+        /* Surface Styles */
+        .surface-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .surface-card { padding: 24px; text-align: center; }
+        .surface-label { font-size: 12px; color: #6B7280; margin-top: 12px; }
+
+        /* Buttons */
+        .button-grid { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #F59E0B; color: white; }
+        .btn-primary:hover { background: #D97706; transform: translateY(-1px); }
+        .btn-secondary { background: white; border: 1px solid #E5E7EB; color: #374151; }
+        .btn-secondary:hover { background: #F9FAFB; border-color: #D1D5DB; }
+        .btn-text { background: transparent; color: #F59E0B; }
+        .btn-text:hover { background: #FEF3C7; }
+        .btn-danger { background: #EF4444; color: white; }
+        .btn-danger:hover { background: #DC2626; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-lg { padding: 14px 28px; font-size: 16px; }
+
+        /* Inputs */
+        .input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .input-group { margin-bottom: 16px; }
+        .input-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #374151; }
+        .input { width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+        .input:focus { outline: none; border-color: #F59E0B; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); }
+        .input:disabled { background: #F3F4F6; cursor: not-allowed; }
+        .input.error { border-color: #EF4444; }
+        .input.success { border-color: #10B981; }
+        .input-hint { font-size: 12px; color: #6B7280; margin-top: 4px; }
+        .input-hint.error { color: #EF4444; }
+
+        /* Checkbox, Radio, Switch */
+        .form-control { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; cursor: pointer; }
+        .checkbox { width: 20px; height: 20px; border: 2px solid #D1D5DB; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .checkbox.checked { background: #F59E0B; border-color: #F59E0B; }
+        .checkbox.checked::after { content: '✓'; color: white; font-size: 14px; }
+        .radio { width: 20px; height: 20px; border: 2px solid #D1D5DB; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .radio.checked { border-color: #F59E0B; }
+        .radio.checked::after { content: ''; width: 10px; height: 10px; background: #F59E0B; border-radius: 50%; }
+        .switch { width: 44px; height: 24px; background: #D1D5DB; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.2s; }
+        .switch.on { background: #10B981; }
+        .switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: all 0.2s; }
+        .switch.on::after { left: 22px; }
+
+        /* Select */
+        .select { width: 100%; padding: 10px 14px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; }
+        .select:focus { outline: none; border-color: #F59E0B; }
+
+        /* Cards */
+        .demo-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #E5E7EB; margin-bottom: 16px; }
+        .demo-card-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .demo-card-content { color: #6B7280; line-height: 1.6; }
+        .stat-card { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 24px; border-radius: 12px; text-align: center; }
+        .stat-value { font-size: 36px; font-weight: 700; }
+        .stat-label { font-size: 14px; opacity: 0.9; }
+
+        /* Table */
+        .demo-table { width: 100%; border-collapse: collapse; }
+        .demo-table th { text-align: left; padding: 12px 16px; background: #F9FAFB; font-size: 12px; font-weight: 600; color: #6B7280; border-bottom: 1px solid #E5E7EB; }
+        .demo-table td { padding: 16px; border-bottom: 1px solid #F3F4F6; font-size: 14px; }
+        .demo-table tr:hover { background: #F9FAFB; }
+
+        /* Badges */
+        .badge { padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 500; display: inline-block; }
+        .badge-pending { background: #FEF3C7; color: #D97706; }
+        .badge-success { background: #D1FAE5; color: #059669; }
+        .badge-warning { background: #FEF3C7; color: #D97706; }
+        .badge-error { background: #FEE2E2; color: #DC2626; }
+        .badge-disabled { background: #F3F4F6; color: #9CA3AF; }
+
+        /* Navigation */
+        .nav-demo { display: flex; flex-direction: column; gap: 4px; background: #111827; padding: 16px; border-radius: 12px; width: 256px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: #9CA3AF; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .nav-item:hover { background: #374151; color: #F59E0B; }
+        .nav-item.active { background: #374151; color: #F59E0B; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; color: #6B7280; font-size: 14px; }
+        .breadcrumb-link { color: #F59E0B; cursor: pointer; }
+        .breadcrumb-link:hover { text-decoration: underline; }
+        .tabs { display: flex; border-bottom: 1px solid #E5E7EB; margin-bottom: 24px; }
+        .tab { padding: 12px 24px; border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500; color: #6B7280; transition: all 0.2s; }
+        .tab:hover { color: #374151; }
+        .tab.active { color: #F59E0B; border-bottom-color: #F59E0B; }
+
+        /* Skeleton */
+        .skeleton-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #E5E7EB; }
+        .skeleton-line { height: 16px; background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: 12px; }
+        .skeleton-circle { width: 48px; height: 48px; background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 50%; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .spinner { width: 40px; height: 40px; border: 3px solid #F3F4F6; border-top-color: #F59E0B; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast */
+        .toast { position: fixed; top: 24px; right: 24px; padding: 16px 24px; border-radius: 8px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-success { background: #10B981; color: white; }
+        .toast-error { background: #EF4444; color: white; }
+        .toast-warning { background: #F97316; color: white; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal { background: white; border-radius: 16px; width: 480px; max-width: 90%; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.25); }
+        .modal-header { padding: 24px; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: 600; }
+        .modal-close { width: 32px; height: 32px; border-radius: 8px; border: none; background: #F3F4F6; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 24px; border-top: 1px solid #E5E7EB; display: flex; justify-content: flex-end; gap: 12px; }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 48px; }
+        .empty-icon { width: 80px; height: 80px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-title { font-size: 18px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+        .empty-desc { color: #6B7280; margin-bottom: 24px; }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="page-title">设计系统与组件库</h1>
+            <p class="page-desc">此页面展示所有设计令牌和可复用组件</p>
+        </div>
+
+        <!-- 1. Color Tokens -->
+        <div class="section">
+            <h2 class="section-title">颜色令牌</h2>
+
+            <h3 class="section-subtitle">主色</h3>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #F59E0B;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-primary</div>
+                        <div class="color-hex">#F59E0B</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #D97706;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-primary-hover</div>
+                        <div class="color-hex">#D97706</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">功能色</h3>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #3B82F6;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-secondary</div>
+                        <div class="color-hex">#3B82F6</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #10B981;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-success</div>
+                        <div class="color-hex">#10B981</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #F97316;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-warning</div>
+                        <div class="color-hex">#F97316</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #EF4444;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-error</div>
+                        <div class="color-hex">#EF4444</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">文字色</h3>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #111827;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-text-primary</div>
+                        <div class="color-hex">#111827</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #6B7280;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-text-secondary</div>
+                        <div class="color-hex">#6B7280</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #9CA3AF;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-text-placeholder</div>
+                        <div class="color-hex">#9CA3AF</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">背景色</h3>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #F9FAFB; border: 1px solid #E5E7EB;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-bg-page</div>
+                        <div class="color-hex">#F9FAFB</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #FFFFFF; border: 1px solid #E5E7EB;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-bg-surface</div>
+                        <div class="color-hex">#FFFFFF</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="color-swatch" style="background: #F3F4F6;"></div>
+                    <div class="color-info">
+                        <div class="color-name">color-bg-disabled</div>
+                        <div class="color-hex">#F3F4F6</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Typography -->
+        <div class="section">
+            <h2 class="section-title">字体排印</h2>
+            <div class="typography-item">
+                <span style="font-size: 28px; font-weight: 600; line-height: 36px;">页面主标题 Heading-1</span>
+                <span class="typography-spec">28px / 36px / 600</span>
+            </div>
+            <div class="typography-item">
+                <span style="font-size: 20px; font-weight: 600; line-height: 28px;">区块标题 Heading-2</span>
+                <span class="typography-spec">20px / 28px / 600</span>
+            </div>
+            <div class="typography-item">
+                <span style="font-size: 16px; font-weight: 600; line-height: 24px;">卡片标题 Heading-3</span>
+                <span class="typography-spec">16px / 24px / 600</span>
+            </div>
+            <div class="typography-item">
+                <span style="font-size: 16px; line-height: 24px;">表单标签、正文 Body-Large</span>
+                <span class="typography-spec">16px / 24px / 400</span>
+            </div>
+            <div class="typography-item">
+                <span style="font-size: 14px; line-height: 20px;">表格内容、长文本 Body-Base</span>
+                <span class="typography-spec">14px / 20px / 400</span>
+            </div>
+            <div class="typography-item">
+                <span style="font-size: 12px; line-height: 16px; color: #6B7280;">辅助信息、时间戳 Caption</span>
+                <span class="typography-spec">12px / 16px / 400</span>
+            </div>
+        </div>
+
+        <!-- 3. Spacing -->
+        <div class="section">
+            <h2 class="section-title">间距刻度（基于 8px）</h2>
+            <div class="spacing-grid">
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 4px;"></div>
+                    <div class="spacing-label">xs: 4px</div>
+                </div>
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 8px;"></div>
+                    <div class="spacing-label">sm: 8px</div>
+                </div>
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 16px;"></div>
+                    <div class="spacing-label">md: 16px</div>
+                </div>
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 24px;"></div>
+                    <div class="spacing-label">lg: 24px</div>
+                </div>
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 32px;"></div>
+                    <div class="spacing-label">xl: 32px</div>
+                </div>
+                <div class="spacing-item">
+                    <div class="spacing-bar" style="width: 48px;"></div>
+                    <div class="spacing-label">2xl: 48px</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Surface Styles -->
+        <div class="section">
+            <h2 class="section-title">圆角、边框、阴影</h2>
+
+            <h3 class="section-subtitle">圆角</h3>
+            <div class="surface-grid">
+                <div class="surface-card" style="background: #F3F4F6; border-radius: 4px;">
+                    <div class="surface-label">radius-sm: 4px</div>
+                </div>
+                <div class="surface-card" style="background: #F3F4F6; border-radius: 8px;">
+                    <div class="surface-label">radius-md: 8px</div>
+                </div>
+                <div class="surface-card" style="background: #F3F4F6; border-radius: 12px;">
+                    <div class="surface-label">radius-lg: 12px</div>
+                </div>
+                <div class="surface-card" style="background: #F3F4F6; border-radius: 9999px;">
+                    <div class="surface-label">radius-full: 9999px</div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">阴影</h3>
+            <div class="surface-grid">
+                <div class="surface-card" style="background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <div class="surface-label">shadow-sm</div>
+                </div>
+                <div class="surface-card" style="background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <div class="surface-label">shadow-md</div>
+                </div>
+                <div class="surface-card" style="background: white; box-shadow: 0 10px 15px rgba(0,0,0,0.1);">
+                    <div class="surface-label">shadow-lg</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Buttons -->
+        <div class="section">
+            <h2 class="section-title">按钮组件</h2>
+
+            <h3 class="section-subtitle">按钮类型</h3>
+            <div class="button-grid">
+                <button class="btn btn-primary">主要按钮</button>
+                <button class="btn btn-secondary">次要按钮</button>
+                <button class="btn btn-text">文本按钮</button>
+                <button class="btn btn-danger">危险按钮</button>
+                <button class="btn btn-primary" disabled>禁用状态</button>
+            </div>
+
+            <h3 class="section-subtitle">尺寸变体</h3>
+            <div class="button-grid">
+                <button class="btn btn-primary btn-sm">小按钮</button>
+                <button class="btn btn-primary">中按钮</button>
+                <button class="btn btn-primary btn-lg">大按钮</button>
+            </div>
+
+            <h3 class="section-subtitle">图标按钮</h3>
+            <div class="button-grid">
+                <button class="btn btn-primary">➕ 新增</button>
+                <button class="btn btn-secondary">✏️ 编辑</button>
+                <button class="btn btn-danger">🗑️ 删除</button>
+            </div>
+        </div>
+
+        <!-- 6. Inputs -->
+        <div class="section">
+            <h2 class="section-title">输入框组件</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label class="input-label">默认状态</label>
+                    <input type="text" class="input" placeholder="请输入内容">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">聚焦状态</label>
+                    <input type="text" class="input" placeholder="聚焦时显示边框" style="border-color: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,0.1);">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">禁用状态</label>
+                    <input type="text" class="input" placeholder="禁用输入" disabled>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">错误状态</label>
+                    <input type="text" class="input error" value="错误内容">
+                    <div class="input-hint error">请输入正确的内容</div>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">成功状态</label>
+                    <input type="text" class="input success" value="正确内容">
+                    <div class="input-hint" style="color: #10B981;">验证通过</div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">复选框、单选、开关</h3>
+            <div style="display: flex; gap: 48px; margin-top: 16px;">
+                <div>
+                    <div class="form-control">
+                        <div class="checkbox"></div>
+                        <span>未选中</span>
+                    </div>
+                    <div class="form-control">
+                        <div class="checkbox checked"></div>
+                        <span>已选中</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-control">
+                        <div class="radio"></div>
+                        <span>未选中</span>
+                    </div>
+                    <div class="form-control">
+                        <div class="radio checked"></div>
+                        <span>已选中</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-control">
+                        <div class="switch"></div>
+                        <span>关闭</span>
+                    </div>
+                    <div class="form-control">
+                        <div class="switch on"></div>
+                        <span>开启</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Select -->
+        <div class="section">
+            <h2 class="section-title">下拉选择组件</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label class="input-label">单选下拉</label>
+                    <select class="select">
+                        <option>请选择</option>
+                        <option>选项一</option>
+                        <option>选项二</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">分组下拉</label>
+                    <select class="select">
+                        <optgroup label="分组一">
+                            <option>选项 A</option>
+                            <option>选项 B</option>
+                        </optgroup>
+                        <optgroup label="分组二">
+                            <option>选项 C</option>
+                            <option>选项 D</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Cards -->
+        <div class="section">
+            <h2 class="section-title">卡片组件</h2>
+            <div class="surface-grid">
+                <div class="demo-card">
+                    <div class="demo-card-title">信息卡片</div>
+                    <div class="demo-card-content">这是一个基础的信息卡片，用于展示内容和操作按钮。</div>
+                    <div style="margin-top: 16px;">
+                        <button class="btn btn-primary btn-sm">操作</button>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">¥12,580</div>
+                    <div class="stat-label">今日收入</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%);">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">今日订单</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. Table -->
+        <div class="section">
+            <h2 class="section-title">表格组件</h2>
+            <table class="demo-table">
+                <thead>
+                    <tr>
+                        <th>名称 ▼</th>
+                        <th>状态</th>
+                        <th>金额</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>宫保鸡丁</td>
+                        <td><span class="badge badge-success">上架中</span></td>
+                        <td style="color: #F59E0B; font-weight: 600;">¥38.00</td>
+                        <td><button class="btn btn-secondary btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                        <td>鱼香肉丝</td>
+                        <td><span class="badge badge-success">上架中</span></td>
+                        <td style="color: #F59E0B; font-weight: 600;">¥35.00</td>
+                        <td><button class="btn btn-secondary btn-sm">编辑</button></td>
+                    </tr>
+                    <tr>
+                        <td>可乐</td>
+                        <td><span class="badge badge-disabled">已下架</span></td>
+                        <td style="color: #F59E0B; font-weight: 600;">¥10.00</td>
+                        <td><button class="btn btn-secondary btn-sm">编辑</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 10. Badges -->
+        <div class="section">
+            <h2 class="section-title">状态徽章</h2>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <span class="badge badge-pending">待处理</span>
+                <span class="badge badge-success">成功</span>
+                <span class="badge badge-warning">警告</span>
+                <span class="badge badge-error">错误</span>
+                <span class="badge badge-disabled">禁用</span>
+            </div>
+        </div>
+
+        <!-- 11. Navigation -->
+        <div class="section">
+            <h2 class="section-title">导航组件</h2>
+
+            <h3 class="section-subtitle">侧边栏导航</h3>
+            <div class="nav-demo">
+                <div class="nav-item active">🏠 首页</div>
+                <div class="nav-item">📋 订单</div>
+                <div class="nav-item">👥 CRM</div>
+                <div class="nav-item">🍽️ 菜单</div>
+                <div class="nav-item">⚙️ 设置</div>
+            </div>
+
+            <h3 class="section-subtitle">面包屑</h3>
+            <div class="breadcrumb">
+                <span class="breadcrumb-link">首页</span>
+                <span>/</span>
+                <span class="breadcrumb-link">订单</span>
+                <span>/</span>
+                <span>订单详情</span>
+            </div>
+
+            <h3 class="section-subtitle">标签页</h3>
+            <div class="tabs">
+                <div class="tab active">全部</div>
+                <div class="tab">待接单</div>
+                <div class="tab">制作中</div>
+                <div class="tab">已完成</div>
+            </div>
+        </div>
+
+        <!-- 12. Loading & Skeleton -->
+        <div class="section">
+            <h2 class="section-title">加载状态</h2>
+
+            <h3 class="section-subtitle">骨架屏</h3>
+            <div class="skeleton-card" style="display: flex; gap: 16px;">
+                <div class="skeleton-circle"></div>
+                <div style="flex: 1;">
+                    <div class="skeleton-line" style="width: 60%;"></div>
+                    <div class="skeleton-line" style="width: 40%;"></div>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">Spinner</h3>
+            <div style="display: flex; gap: 16px; align-items: center;">
+                <div class="spinner"></div>
+                <span style="color: #6B7280;">加载中...</span>
+            </div>
+        </div>
+
+        <!-- 13. Empty State -->
+        <div class="section">
+            <h2 class="section-title">空状态</h2>
+            <div class="empty-state" style="background: #F9FAFB; border-radius: 12px;">
+                <div class="empty-icon">📭</div>
+                <div class="empty-title">暂无数据</div>
+                <div class="empty-desc">当前列表为空，点击下方按钮添加第一条数据</div>
+                <button class="btn btn-primary">添加数据</button>
+            </div>
+        </div>
+
+        <!-- 14. Toast Demo -->
+        <div class="section">
+            <h2 class="section-title">吐司提示</h2>
+            <div class="button-grid">
+                <button class="btn btn-primary" onclick="showToast('success')">成功吐司</button>
+                <button class="btn btn-danger" onclick="showToast('error')">错误吐司</button>
+                <button class="btn btn-secondary" onclick="showToast('warning')">警告吐司</button>
+            </div>
+        </div>
+
+        <!-- 15. Modal Demo -->
+        <div class="section">
+            <h2 class="section-title">模态框</h2>
+            <button class="btn btn-primary" onclick="openModal()">打开模态框</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" style="position: fixed; top: 24px; right: 24px; display: flex; flex-direction: column; gap: 12px; z-index: 1000;"></div>
+
+    <!-- Modal -->
+    <div id="modalOverlay" class="modal-overlay" style="display: none;" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">示例模态框</div>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #6B7280; line-height: 1.6;">这是一个模态框示例。模态框用于展示重要信息或收集用户输入，用户必须完成操作或关闭后才能继续与页面交互。</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="closeModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            const icons = { success: '✓', error: '✕', warning: '⚠' };
+            const messages = { success: '操作成功', error: '操作失败', warning: '请注意' };
+
+            toast.innerHTML = `<span>${icons[type]}</span><span>${messages[type]}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function openModal() {
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
